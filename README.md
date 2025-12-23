@@ -8,6 +8,13 @@ Application Launcher for M5Stack, Lilygo, CYDs, Marauder and ESP32 devices.
 
 Join our [Discord community](https://discord.gg/BE9by2a2FF)
 
+## Fork / Xteink X4 Port
+
+This repository is a fork of the original Launcher project and includes a port for the **Xteink X4 (ESP32-C3, 16MB)**.
+
+- **Xteink X4 flashing guide (esptool):** `XTEINK_X4_GUIDE.md`
+- **Note:** Xteink X4 OTA (LauncherHub firmware list) **does not work yet**.
+
 ## How to Install
 * Use the Flasher: [Launcher Flasher](https://bmorcelli.github.io/Launcher/).
 * Use M5Burner, or
