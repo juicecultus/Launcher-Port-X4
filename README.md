@@ -3,7 +3,7 @@
 This repository is a fork of the original Launcher project and includes a port for the **Xteink X4 (ESP32-C3, 16MB)**.
 
 - **Xteink X4 flashing guide (esptool):** `XTEINK_X4_GUIDE.md`
-- **Note:** Xteink X4 OTA (LauncherHub firmware list) **does not work yet**.
+- **Note:** Xteink X4 OTA (EinkHub firmware list) **does not work yet**.
 
 /
 /

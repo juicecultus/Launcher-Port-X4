@@ -88,8 +88,13 @@ void displayScrollingText(const String &text, Opt_Coord &coord) {
     } else if (millis() > _lastmillis + 200) {
         String scrollingPart =
             displayText.substring(i, i + (coord.size - 1)); // Display charLimit characters at a time
+        const int charWidth = 6 * tft->getTextsize();
         tft->fillRect(
-            coord.x, coord.y, (coord.size - 1) * LW * tft->getTextsize(), LH * tft->getTextsize(), BGCOLOR
+            coord.x,
+            coord.y,
+            (coord.size - 1) * charWidth,
+            8 * tft->getTextsize(),
+            coord.bgcolor
         ); // Clear display area
         tft->setCursor(coord.x, coord.y);
         tft->setCursor(coord.x, coord.y);
@@ -574,16 +579,24 @@ Opt_Coord drawOptions(
     tft->setTextSize(FM);
 
     if (border) {
+#ifdef E_PAPER_DISPLAY
+        tft->fillRoundRect(boxX, boxY, contentWidth, contentHeight, 5, bgcolor);
+#else
         if (firstItemSelected) tft->fillRoundRect(boxX, boxY, contentWidth, contentHeight, 5, bgcolor);
+#endif
         tft->drawRoundRect(boxX, boxY, contentWidth, contentHeight, 5, fgcolor);
     } else {
+#ifdef E_PAPER_DISPLAY
+        tft->fillRoundRect(3, 3, tftWidth - 6, tftHeight - 6, 5, bgcolor);
+#else
         if (firstItemSelected) tft->fillRoundRect(3, 3, tftWidth - 6, tftHeight - 6, 5, bgcolor);
+#endif
         tft->drawRoundRect(2, 2, tftWidth - 4, tftHeight - 4, 5, fgcolor);
     }
 
     int lineWidth = contentWidth - paddingSide * 2;
     if (lineWidth < 0) lineWidth = contentWidth;
-    int charWidth = LW * tft->getTextsize();
+    int charWidth = 6 * tft->getTextsize();
     if (charWidth <= 0) charWidth = 1;
     int indicatorWidth = charWidth;
     if (indicatorWidth > lineWidth) indicatorWidth = lineWidth;
@@ -612,6 +625,7 @@ Opt_Coord drawOptions(
         int optionIndex = start + i;
         int rowTop = textStartY + rowIndex * (lineHeight + rowSpacing);
         int rowLeft = boxX + paddingSide;
+        tft->fillRect(rowLeft, rowTop, lineWidth, lineHeight, bgcolor);
         if (i > 0) tft->fillRect(rowLeft, rowTop - rowSpacing, lineWidth, rowSpacing, bgcolor);
         int prefixWidth = 0;
         int cursorX = rowLeft;
@@ -649,12 +663,11 @@ Opt_Coord drawOptions(
         int labelCharLimit = labelWidth / charWidth;
         if (labelCharLimit < 1) labelCharLimit = 1;
 
-        char txt[labelCharLimit];
-        snprintf(txt, sizeof(txt), "%-*s", labelCharLimit, opt[optionIndex].label.c_str());
-
+        String label = opt[optionIndex].label;
+        if (label.length() > labelCharLimit) label = label.substring(0, labelCharLimit);
         tft->setCursor(labelX, rowTop);
         tft->setTextColor(color, bgcolor);
-        tft->print(txt);
+        tft->print(label);
 
         MenuOptions optItem(String(optionIndex), "", nullptr, true, optionIndex == index);
         optItem.setCoords(labelX, rowTop, 0 > labelWidth ? 0 : labelWidth, lineHeight + rowSpacing);
@@ -1122,7 +1135,7 @@ void loopFirmware() {
 RESTART:
     currentIndex = -1;
     if (_page != current_page || refine) {
-        GetJsonFromLauncherHub(current_page, order_by, star, query);
+        GetJsonFromEinkHub(current_page, order_by, star, query);
         index = 1;
     }
     options = {};

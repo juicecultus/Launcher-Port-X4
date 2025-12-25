@@ -191,6 +191,8 @@ extern String wui_pwd;
 
 extern String dwn_path;
 
+extern String hub_url;
+
 extern int currentIndex;
 
 extern uint16_t total_firmware; // Number of available firmware on the list

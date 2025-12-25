@@ -23,13 +23,13 @@ void downloadFirmware(String fid, String file, String fileName, String folder = 
 
 void wifiConnect(String ssid, int encryptation, bool isAP = false);
 
-bool GetJsonFromLauncherHub(
+bool GetJsonFromEinkHub(
     uint8_t page = 1, String order = "downloads", bool star = false, String query = ""
 );
 
 JsonDocument getVersionInfo(String fid);
 
-bool installFAT_OTA(WiFiClientSecure *client, String file, uint32_t offset, uint32_t size, const char *label);
+bool installFAT_OTA(WiFiClient *client, String file, uint32_t offset, uint32_t size, const char *label);
 
 bool clearOnlineCoredump();
 

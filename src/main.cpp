@@ -106,6 +106,7 @@ String pwd;
 String wui_usr = "admin";
 String wui_pwd = "launcher";
 String dwn_path = "/downloads/";
+String hub_url = "https://einkhub.com";
 uint16_t total_firmware = 0;
 uint8_t current_page = 1;
 uint8_t num_pages = 0;

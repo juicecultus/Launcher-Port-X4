@@ -8,6 +8,13 @@
 
 #define M5_SERVER_PATH "https://m5burner-cdn.m5stack.com/firmware/"
 
+static String getHubBaseUrl() {
+    String base = hub_url;
+    base.trim();
+    if (base.endsWith("/")) base.remove(base.length() - 1);
+    return base;
+}
+
 /***************************************************************************************
 ** Function name: wifiConnect
 ** Description:   Connects to wifiNetwork
@@ -169,7 +176,7 @@ void ota_function() {
             idx = loopOptions(options, false, FGCOLOR, BGCOLOR, false, idx);
             if (!returnToMenu && idx != -1) goto RELOAD;
         } else {
-            if (GetJsonFromLauncherHub()) loopFirmware();
+            if (GetJsonFromEinkHub()) loopFirmware();
         }
     }
     tft->fillScreen(BGCOLOR);
@@ -198,13 +205,20 @@ String replaceChars(String input) {
 bool getInfo(String serverUrl, JsonDocument &_doc) {
     if (WiFi.status() == WL_CONNECTED) {
         vTaskSuspend(xHandle);
-        WiFiClientSecure *client = new WiFiClientSecure();
-        client->setInsecure();
+        WiFiClient *client = nullptr;
+        WiFiClientSecure *secureClient = nullptr;
+        if (serverUrl.startsWith("https://")) {
+            secureClient = new WiFiClientSecure();
+            secureClient->setInsecure();
+            client = secureClient;
+        } else {
+            client = new WiFiClient();
+        }
         HTTPClient http;
         resetTftDisplay();
         tft->drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, FGCOLOR);
         tft->drawCentreString("Getting info from", tftWidth / 2, tftHeight / 3, 1);
-        tft->drawCentreString("LauncherHub", tftWidth / 2, tftHeight / 3 + FM * 9, 1);
+        tft->drawCentreString("EinkHub", tftWidth / 2, tftHeight / 3 + FM * 9, 1);
 #ifdef E_PAPER_DISPLAY
         tft->display(false);
 #endif
@@ -233,6 +247,7 @@ bool getInfo(String serverUrl, JsonDocument &_doc) {
                 }
                 Serial.printf("[GetInfo] Downloaded and parsed json with size: %d\n", _doc.size());
                 vTaskResume(xHandle);
+                delete client;
                 return true;
             }
 
@@ -240,27 +255,28 @@ bool getInfo(String serverUrl, JsonDocument &_doc) {
             tftprint(".", 10);
             http.end();
         }
+        delete client;
     }
     vTaskResume(xHandle);
     return false;
 }
 
 /***************************************************************************************
-** Function name: GetJsonFromLauncherHub
+** Function name: GetJsonFromEinkHub
 ** Description:   Gets JSON from github server
 ***************************************************************************************/
-bool GetJsonFromLauncherHub(uint8_t page, String order, bool star, String query) {
+bool GetJsonFromEinkHub(uint8_t page, String order, bool star, String query) {
     String q = "&order_by=" + order;
     q += page > 1 ? "&page=" + String(page) : "";
     q += query.length() > 0 ? "&q=" + String(query) : "";
     q += star ? "&star=1" : "";
-    String serverUrl = "https://api.launcherhub.net/firmwares?category=" + String(OTA_TAG) + q;
+    String serverUrl = getHubBaseUrl() + "/firmwares?category=" + String(OTA_TAG) + q;
 
     if (getInfo(serverUrl, doc)) {
         total_firmware = doc["total"].as<int>();
         num_pages = doc["total"].as<int>() / doc["page_size"].as<int>();
         current_page = page;
-        Serial.printf("GetJsonFromLauncherHub> Loaded %d firmwares\n", total_firmware);
+        Serial.printf("GetJsonFromEinkHub> Loaded %d firmwares\n", total_firmware);
         return true;
     }
     displayRedStripe("Firmware list fetch Failed");
@@ -269,7 +285,7 @@ bool GetJsonFromLauncherHub(uint8_t page, String order, bool star, String query)
 }
 JsonDocument getVersionInfo(String fid) {
     JsonDocument versions;
-    String serverUrl = "https://api.launcherhub.net/firmwares?fid=" + fid;
+    String serverUrl = getHubBaseUrl() + "/firmwares?fid=" + fid;
     if (!getInfo(serverUrl, versions)) {
         displayRedStripe("Version fetch Failed");
         vTaskDelay(1500 / portTICK_PERIOD_MS);
@@ -282,7 +298,7 @@ JsonDocument getVersionInfo(String fid) {
 ***************************************************************************************/
 void downloadFirmware(String fid, String file, String fileName, String folder) { // Adicionar "fid"
     if (!file.startsWith("https://")) file = M5_SERVER_PATH + file;
-    String fileAddr = "https://api.launcherhub.net/download?fid=" + fid + "&file=" + file;
+    String fileAddr = getHubBaseUrl() + "/download?fid=" + fid + "&file=" + file;
     if (fid == "") fileAddr = file;
     int tries = 0;
     fileName = replaceChars(fileName);
@@ -295,8 +311,15 @@ void downloadFirmware(String fid, String file, String fileName, String folder) {
 
     tft->fillRect(7, 40, tftWidth - 14, 88, BGCOLOR); // Erase the information below the firmware name
     displayRedStripe("Connecting FW");
-    WiFiClientSecure *client = new WiFiClientSecure;
-    client->setInsecure();
+    WiFiClient *client = nullptr;
+    WiFiClientSecure *secureClient = nullptr;
+    if (fileAddr.startsWith("https://")) {
+        secureClient = new WiFiClientSecure;
+        secureClient->setInsecure();
+        client = secureClient;
+    } else {
+        client = new WiFiClient;
+    }
 retry:
     if (client) {
         HTTPClient http;
@@ -382,6 +405,7 @@ retry:
     } else {
         displayRedStripe("Couldn't Connect");
     }
+    delete client;
     wakeUpScreen();
 }
 /***************************************************************************************
@@ -564,7 +588,7 @@ void installFirmware( // adicionar "fid"
 ) {
     uint32_t app_offset = 0x10000;
     if (!file.startsWith("https://")) file = M5_SERVER_PATH + file;
-    String fileAddr = "https://api.launcherhub.net/download?fid=" + fid + "&file=" + file;
+    String fileAddr = getHubBaseUrl() + "/download?fid=" + fid + "&file=" + file;
     if (fid == "") fileAddr = file;
 
     // Release RAM Memory from Json Objects
@@ -587,9 +611,15 @@ void installFirmware( // adicionar "fid"
     tft->fillRect(7, 40, tftWidth - 14, 88, BGCOLOR); // Erase the information below the firmware name
     displayRedStripe("Connecting FW");
 
-    WiFiClientSecure *client = new WiFiClientSecure;
-
-    client->setInsecure();
+    WiFiClient *client = nullptr;
+    WiFiClientSecure *secureClient = nullptr;
+    if (fileAddr.startsWith("https://")) {
+        secureClient = new WiFiClientSecure;
+        secureClient->setInsecure();
+        client = secureClient;
+    } else {
+        client = new WiFiClient;
+    }
     httpUpdate.rebootOnUpdate(false);
     httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS); // Github links need it
     /* Install App */
@@ -613,7 +643,7 @@ void installFirmware( // adicionar "fid"
     displayRedStripe("Removing Coredump");
     clearOnlineCoredump();
 
-    // Do not request to api.launcherhub.net a second time, go straight to the file
+    // Do not request to api.einkhub.net a second time, go straight to the file
     // Requests must be done to "file" link directly
     if (spiffs) {
         prog_handler = 1;
@@ -666,10 +696,12 @@ void installFirmware( // adicionar "fid"
 #endif
 
 Sucesso:
+    delete client;
     esp_restart();
 
 // Só chega aqui se der errado
 SAIR:
+    delete client;
     vTaskResume(xHandle);
     delay(2000);
 }
@@ -679,7 +711,7 @@ SAIR:
 ** Description:   install FAT partition OverTheAir
 ***************************************************************************************/
 bool installFAT_OTA(
-    WiFiClientSecure *client, String file, uint32_t offset, uint32_t size, const char *label
+    WiFiClient *client, String file, uint32_t offset, uint32_t size, const char *label
 ) {
     prog_handler = 1; // review
 

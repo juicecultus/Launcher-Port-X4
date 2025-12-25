@@ -66,6 +66,7 @@
             - { env: "lilygo-t-hmi"               }
             - { env: "lilygo-t-display-S3-amoled" }
             - { env: "smoochiee-board"            }
+            - { env: "xteink-x4"                  }
             - { env: "Marauder-v4-OG"             }
             - { env: "Marauder-v61"               }
             - { env: "Marauder-v7"                }

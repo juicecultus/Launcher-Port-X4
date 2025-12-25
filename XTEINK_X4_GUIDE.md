@@ -6,7 +6,20 @@ This repository is a fork/port of the original Launcher project with added suppo
 
 - Xteink X4 boots and runs the Launcher build.
 - SD card support and on-screen keyboard UI have been adjusted for X4.
-- **OTA firmware list / LauncherHub is not working yet** on Xteink X4.
+- OTA firmware list is configurable via `hub_url` in `config.conf` (e.g. you can point it to Einkhub).
+
+## Einkhub (marketplace) integration
+
+Launcher reads `hub_url` from `config.conf` on the SD card. To point it at an Einkhub dev server on your LAN:
+
+```json
+"hub_url": "http://192.168.6.151:3000"
+```
+
+Notes:
+
+- Use a LAN IP or hostname reachable from the device (not `localhost`).
+- Xteink X4 build uses `OTA_TAG=third_party`, so Einkhub should serve `GET /firmwares?category=third_party`.
 
 ## What you need
 

@@ -468,9 +468,9 @@ bool config_exists() {
         if (conf) {
             conf.printf(
                 "[{\"%s\":%d,\"dimmerSet\":10,\"onlyBins\":1,\"bright\":100,\"askSpiffs\":1,\"wui_usr\":"
-                "\"admin\",\"wui_pwd\":\"launcher\",\"dwn_path\":\"/downloads/"
-                "\",\"FGCOLOR\":2016,\"BGCOLOR\":0,\"ALCOLOR\":63488,\"even\":13029,\"odd\":12485,\",\"dev\":"
-                "0,\"wifi\":[{\"ssid\":\"myNetSSID\",\"pwd\":\"myNetPassword\"}], \"favorite\":[]}]",
+                "\"admin\",\"wui_pwd\":\"launcher\",\"dwn_path\":\"/downloads/\",\"hub_url\":\"https://einkhub.com\""
+                ",\"FGCOLOR\":2016,\"BGCOLOR\":0,\"ALCOLOR\":63488,\"even\":13029,\"odd\":12485,\"dev\":"
+                "0,\"wifi\":[{\"ssid\":\"myNetSSID\",\"pwd\":\"myNetPassword\"}],\"favorite\":[]}]",
                 get_efuse_mac_as_string().c_str(),
                 ROTATION
             );
@@ -504,6 +504,7 @@ bool saveIntoNVS() {
     err |= nvsHandle->set_string("wui_usr", wui_usr.c_str());
     err |= nvsHandle->set_string("wui_pwd", wui_pwd.c_str());
     err |= nvsHandle->set_string("dwn_path", dwn_path.c_str());
+    err |= nvsHandle->set_string("hub_url", hub_url.c_str());
 #if defined(HEADLESS)
     // SD Pins
     err |= nvsHandle->set_item("miso", _miso);
@@ -605,6 +606,7 @@ void defaultValues() {
     wui_usr = "admin";
     wui_pwd = "launcher";
     dwn_path = "/downloads/";
+    hub_url = "https://einkhub.com";
 #if defined(HEADLESS)
     // SD Pins
     _miso = 0;
@@ -653,6 +655,9 @@ bool getFromNVS() {
     wui_pwd = String(buffer);
     err |= nvsHandle->get_string("dwn_path", buffer, sizeof(buffer));
     dwn_path = String(buffer);
+    if (nvsHandle->get_string("hub_url", buffer, sizeof(buffer)) == ESP_OK) {
+        hub_url = String(buffer);
+    }
     if (err != ESP_OK) {
         log_i("Failed to retrieve settings from NVS: %d\nUsing Default values", err);
         defaultValues();
@@ -848,6 +853,12 @@ void getConfigs() {
                 count++;
                 log_i("Fail");
             }
+            if (setting["hub_url"].is<String>()) {
+                hub_url = setting["hub_url"].as<String>();
+            } else {
+                count++;
+                log_i("Fail");
+            }
             if (!setting["wifi"].is<JsonArray>()) {
                 ++count;
                 log_i("Fail");
@@ -947,6 +958,7 @@ void saveConfigs() {
         setting["wui_usr"] = wui_usr;
         setting["wui_pwd"] = wui_pwd;
         setting["dwn_path"] = dwn_path;
+        setting["hub_url"] = hub_url;
 
         File file = SDM.open(CONFIG_FILE, FILE_WRITE, true);
         if (!file) {
