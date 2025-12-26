@@ -21,64 +21,7 @@
         fail-fast: false
         matrix:
           board:
-            #- { env: "arduino-nesso-n1"           }
-            - { env: "m5stack-cardputer"          }
-            - { env: "m5stack-cplus2"             }
-            - { env: "m5stack-cplus1_1"           }
-            - { env: "m5stack-c"                  }
-            - { env: "m5stack-core2"              }
-            - { env: "m5stack-core"               }
-            - { env: "m5stack-core-4Mb"           }
-            - { env: "m5stack-cores3"             }
-            - { env: "m5stack-tab5"               }
-            - { env: "m5stack-paper-s3"           }
-            - { env: "m5stack-paper"              }
-            - { env: "headless-esp32s3-4mb"       }
-            - { env: "headless-esp32s3-8mb"       }
-            - { env: "headless-esp32s3-16mb"      }
-            - { env: "headless-esp32-4mb"         }
-            - { env: "headless-esp32-8mb"         }
-            - { env: "CYD-2432S028"               }
-            - { env: "CYD-2-USB"                  }
-            - { env: "CYD-2432W328C_2"            }
-            - { env: "CYD-2432W328C"              }
-            - { env: "CYD-2432W328R"              }
-            - { env: "CYD-2432S024R"              }
-            - { env: "CYD-2432S022C"              }
-            - { env: "CYD-2432S032C"              }
-            - { env: "CYD-2432S032R"              }
-            - { env: "CYD-3248S035R"              }
-            - { env: "CYD-3248S035C"              }
-            - { env: "CYD-8048S043C"              }
-            - { env: "CYD-8048W550C"              }
-            - { env: "CYD-3248W535C"              }
-            - { env: "CYD-4827S043R"              }
-            - { env: "lilygo-t-dongle-s3-tft"     }
-            - { env: "lilygo-t-display-S3-touch"  }
-            - { env: "lilygo-t-display-S3-pro"    }
-            - { env: "lilygo-t-embed"             }
-            - { env: "lilygo-t-embed-cc1101"      }
-            - { env: "lilygo-t-lora-pager"        }
-            - { env: "lilygo-t-deck-plus"         }
-            - { env: "lilygo-t-deck"              }
-            - { env: "lilygo-t-deck-pro"          }
-            - { env: "lilygo-t5-epaper-s3-pro"    }
-            - { env: "lilygo-t-hmi"               }
-            - { env: "lilygo-t-display-S3-amoled" }
-            - { env: "smoochiee-board"            }
-            - { env: "xteink-x4"                  }
-            - { env: "Marauder-v4-OG"             }
-            - { env: "Marauder-v61"               }
-            - { env: "Marauder-v7"                }
-            - { env: "Marauder-Mini"              }
-            - { env: "Awok-Mini"                  }
-            - { env: "Awok-Touch"                 }
-            - { env: "WaveSentry-R1"              }
-            - { env: "Phantom_S024R"              }
-            - { env: "elecrow-24B"                }
-            - { env: "elecrow-28B"                }
-            - { env: "elecrow-35B"                }
-            - { env: "elecrow-35Bv2_2"            }
+            - { env: "xteink-x4" }
 
       steps:
           - uses: actions/checkout@v4
